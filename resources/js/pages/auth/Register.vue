@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthBase from '@/layouts/AuthLayout.vue';
+import AuthBase from '@/layouts/LandingAuthLayout.vue';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { Eye, EyeOff } from 'lucide-vue-next';
+import { ref } from 'vue';
+
+const showPassword = ref(false);
 </script>
 
 <template>
     <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
+        title="Daftar Sekarang!"
+        description="START YOUR JOURNEY"
     >
         <Head title="Register" />
 
@@ -24,84 +24,96 @@ import { Form, Head } from '@inertiajs/vue3';
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="name"
-                        name="name"
-                        placeholder="Full name"
-                    />
-                    <InputError :message="errors.name" />
-                </div>
+            <!-- Name Input -->
+            <div class="space-y-1">
+                <label for="name" class="text-[11px] font-semibold text-[#1b1b18]/50">Full Name</label>
+                <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    required
+                    autofocus
+                    tabindex="1"
+                    autocomplete="name"
+                    placeholder="John Doe"
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-[#f8b803]"
+                />
+                <InputError :message="errors.name" />
+            </div>
 
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        :tabindex="2"
-                        autocomplete="email"
-                        name="email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
+            <!-- Email Input -->
+            <div class="space-y-1">
+                <label for="email" class="text-[11px] font-semibold text-[#1b1b18]/50">Email Address</label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    required
+                    tabindex="2"
+                    autocomplete="email"
+                    placeholder="john@example.com"
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-[#f8b803]"
+                />
+                <InputError :message="errors.email" />
+            </div>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
+            <!-- Password Input -->
+            <div class="space-y-1">
+                <label for="password" class="text-[11px] font-semibold text-[#1b1b18]/50">Password</label>
+                <div class="relative">
+                    <input
                         id="password"
-                        type="password"
-                        required
-                        :tabindex="3"
-                        autocomplete="new-password"
+                        :type="showPassword ? 'text' : 'password'"
                         name="password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
                         required
-                        :tabindex="4"
+                        tabindex="3"
                         autocomplete="new-password"
-                        name="password_confirmation"
-                        placeholder="Confirm password"
+                        placeholder="*******"
+                        class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 pr-10 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-[#f8b803]"
                     />
-                    <InputError :message="errors.password_confirmation" />
+                    <button 
+                        type="button" 
+                        class="absolute right-0 top-1/2 -translate-y-1/2 text-[#1b1b18]/30 hover:text-[#1b1b18]"
+                        @click="showPassword = !showPassword"
+                    >
+                        <Eye v-if="!showPassword" class="h-4 w-4" />
+                        <EyeOff v-else class="h-4 w-4" />
+                    </button>
                 </div>
+                <InputError :message="errors.password" />
+            </div>
 
+            <!-- Password Confirmation -->
+            <div class="space-y-1">
+                <label for="password_confirmation" class="text-[11px] font-semibold text-[#1b1b18]/50">Confirm Password</label>
+                <input
+                    id="password_confirmation"
+                    type="password"
+                    name="password_confirmation"
+                    required
+                    tabindex="4"
+                    autocomplete="new-password"
+                    placeholder="********"
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-[#f8b803]"
+                />
+                <InputError :message="errors.password_confirmation" />
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-4">
                 <Button
                     type="submit"
-                    class="mt-2 w-full"
-                    tabindex="5"
+                    class="h-14 w-full rounded-3xl bg-[#efcc53] text-sm font-black tracking-widest text-[#1b1b18] shadow-lg shadow-[#efcc53]/20 hover:bg-[#efcc53]/90 active:scale-[0.98] transition-all"
                     :disabled="processing"
-                    data-test="register-user-button"
                 >
-                    <Spinner v-if="processing" />
-                    Create account
+                    REGISTER
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
+            <!-- Login Link -->
+            <div class="mt-4 text-center text-xs font-semibold text-[#1b1b18]/40">
                 Already have an account?
-                <TextLink
-                    :href="login()"
-                    class="underline underline-offset-4"
-                    :tabindex="6"
-                    >Log in</TextLink
-                >
+                <Link :href="login()" class="text-[#1b1b18] hover:underline underline-offset-4 ml-1">Log in</Link>
             </div>
         </Form>
     </AuthBase>
