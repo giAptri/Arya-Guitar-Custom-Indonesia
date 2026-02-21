@@ -7,23 +7,18 @@ import CTA from '@/components/Landing/CTA.vue';
 import Features from '@/components/Landing/Features.vue';
 import Testimonial from '@/components/Landing/Testimonial.vue';
 import Footer from '@/components/Landing/Footer.vue';
+import BrandInspiration from '@/components/Landing/BrandInspiration.vue';
 
 withDefaults(
     defineProps<{
         canRegister: boolean;
+        guitars: any[];
     }>(),
     {
         canRegister: true,
+        guitars: () => [],
     },
 );
-
-const brands = [
-    { name: 'Ibanez', src: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Ibanez_logo.svg' },
-    { name: 'Fender', src: 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Fender_logo.svg' },
-    { name: 'Gibson', src: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Gibson_logo.svg' },
-    { name: 'Mandalika', src: 'https://upload.wikimedia.org/wikipedia/id/2/23/Logo_Sirkuit_Mandalika.png' },
-    { name: 'Yamaha', src: 'https://upload.wikimedia.org/wikipedia/commons/8/82/Yamaha_Logo.svg' },
-];
 </script>
 
 <template>
@@ -37,38 +32,9 @@ const brands = [
 
         <main>
             <Hero />
-
-            <!-- Brand Section (Marquee) -->
-            <section class="bg-[#0a0a0a] py-24 overflow-hidden border-y border-white/5">
-                <div class="container mx-auto px-4 mb-16">
-                    <div class="text-center">
-                        <h2 class="text-4xl font-bold text-white tracking-tight">
-                            <span class="text-arya-gold">Brand</span> Inspirasi
-                        </h2>
-                        <p class="mt-4 text-white/40 text-sm italic">Gitar kami terinspirasi dari standar industri musik dunia</p>
-                    </div>
-                </div>
-
-                <!-- Marquee Container -->
-                <div class="relative flex overflow-hidden py-4">
-                    <!-- Standard Marquee Flow -->
-                    <div class="flex animate-marquee whitespace-nowrap items-center">
-                        <div v-for="i in 4" :key="i" class="flex items-center">
-                            <div v-for="brand in brands" :key="brand.name + '-' + i" class="mx-16">
-                                <img 
-                                    :src="brand.src" 
-                                    :alt="brand.name" 
-                                    class="h-12 w-auto filter invert brightness-200 opacity-40 hover:opacity-100 hover:scale-110 transition-all duration-500 cursor-pointer object-contain flex-shrink-0"
-                                    loading="eager"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <ProductCatalog />
+            <ProductCatalog :guitars="guitars" />
             <CTA />
+            <BrandInspiration />
             <Features />
             <Testimonial />
         </main>
@@ -81,20 +47,5 @@ const brands = [
 html {
     scroll-behavior: smooth;
     background-color: #0a0a0a;
-}
-
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-  display: flex;
-  width: max-content;
-}
-
-.animate-marquee:hover {
-    animation-play-state: paused;
 }
 </style>

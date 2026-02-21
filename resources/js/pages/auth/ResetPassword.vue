@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import AuthBase from '@/layouts/LandingAuthLayout.vue';
 import { update } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
+import { Eye, EyeOff } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -15,75 +13,86 @@ const props = defineProps<{
 }>();
 
 const inputEmail = ref(props.email);
+const showPassword = ref(false);
 </script>
 
 <template>
-    <AuthLayout
-        title="Reset password"
-        description="Please enter your new password below"
+    <AuthBase
+        title="Reset Password"
+        description="BUAT PASSWORD BARU MU"
     >
-        <Head title="Reset password" />
+        <Head title="Reset Password" />
 
         <Form
             v-bind="update.form()"
             :transform="(data) => ({ ...data, token, email })"
             :reset-on-success="['password', 'password_confirmation']"
             v-slot="{ errors, processing }"
+            class="flex flex-col gap-6"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        autocomplete="email"
-                        v-model="inputEmail"
-                        class="mt-1 block w-full"
-                        readonly
-                    />
-                    <InputError :message="errors.email" class="mt-2" />
-                </div>
+            <!-- Email Input (Readonly) -->
+            <div class="space-y-1">
+                <label for="email" class="text-[11px] font-semibold text-[#1b1b18]/50">Email Address</label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    v-model="inputEmail"
+                    readonly
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18]/60 outline-none cursor-not-allowed"
+                />
+                <InputError :message="errors.email" />
+            </div>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
+            <!-- Password Input -->
+            <div class="space-y-1">
+                <label for="password" class="text-[11px] font-semibold text-[#1b1b18]/50">New Password</label>
+                <div class="relative">
+                    <input
                         id="password"
-                        type="password"
+                        :type="showPassword ? 'text' : 'password'"
                         name="password"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
+                        required
                         autofocus
-                        placeholder="Password"
+                        placeholder="*******"
+                        class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 pr-10 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-arya-gold"
                     />
-                    <InputError :message="errors.password" />
+                    <button 
+                        type="button" 
+                        class="absolute right-0 top-1/2 -translate-y-1/2 text-[#1b1b18]/30 hover:text-[#1b1b18]"
+                        @click="showPassword = !showPassword"
+                    >
+                        <Eye v-if="!showPassword" class="h-4 w-4" />
+                        <EyeOff v-else class="h-4 w-4" />
+                    </button>
                 </div>
+                <InputError :message="errors.password" />
+            </div>
 
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">
-                        Confirm Password
-                    </Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="errors.password_confirmation" />
-                </div>
+            <!-- Confirm Password Input -->
+            <div class="space-y-1">
+                <label for="password_confirmation" class="text-[11px] font-semibold text-[#1b1b18]/50">Confirm Password</label>
+                <input
+                    id="password_confirmation"
+                    type="password"
+                    name="password_confirmation"
+                    required
+                    placeholder="*******"
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-arya-gold"
+                />
+                <InputError :message="errors.password_confirmation" />
+            </div>
 
+            <!-- Submit Button -->
+            <div class="mt-4">
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="h-14 w-full rounded-3xl bg-[#efcc53] text-sm font-black tracking-widest text-[#1b1b18] shadow-lg shadow-[#efcc53]/20 hover:bg-[#efcc53]/90 active:scale-[0.98] transition-all"
                     :disabled="processing"
-                    data-test="reset-password-button"
                 >
-                    <Spinner v-if="processing" />
-                    Reset password
+                    RESET PASSWORD
                 </Button>
             </div>
         </Form>
-    </AuthLayout>
+    </AuthBase>
 </template>

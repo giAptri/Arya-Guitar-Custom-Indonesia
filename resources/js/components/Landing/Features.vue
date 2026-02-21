@@ -21,8 +21,8 @@ const features = [
 </script>
 
 <template>
-    <section class="bg-arya-dark py-24">
-        <div class="container mx-auto px-4">
+    <section id="about" class="bg-arya-dark py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="mb-20 text-center">
                 <h2 class="text-4xl font-bold text-white leading-tight">
                     Kenapa <span class="text-arya-gold">Kami?</span>

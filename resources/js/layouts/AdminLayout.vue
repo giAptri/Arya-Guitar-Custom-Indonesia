@@ -18,7 +18,7 @@ const user = computed(() => page.props.auth.user);
         <div class="flex-1 ml-72 flex flex-col">
             <!-- Header -->
             <header class="h-20 px-12 flex items-center justify-between">
-                <Link :href="home()" class="flex items-center gap-2 text-arya-gold font-bold text-sm tracking-wide">
+                <Link :href="home().url" class="flex items-center gap-2 text-arya-gold font-bold text-sm tracking-wide">
                     <ChevronLeft class="h-4 w-4" />
                     Kembali ke Beranda
                 </Link>

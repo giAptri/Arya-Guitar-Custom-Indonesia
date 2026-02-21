@@ -4,43 +4,78 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { 
     Search, 
     Image as ImageIcon,
-    ExternalLink
+    ExternalLink,
+    Loader2
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import axios from 'axios';
 
 const searchQuery = ref('');
+const orders = ref([]);
+const isLoading = ref(true);
+const statusOptions = ['pending', 'produksi', 'selesai'];
 
-const orders = ref([
-    { id: 1, guitar_name: 'Arya Stratosphere', custom_image: null, custom_text: 'Body mahogany dengan warna biru laut doff', customer_name: 'Jhon Doe', whatsapp: '628123456789', status: 'Produksi' },
-    { id: 2, guitar_name: 'Arya Flame', custom_image: null, custom_text: 'Bridge gold plated, knob warna hitam', customer_name: 'Jane Smith', whatsapp: '628987654321', status: 'Pending' },
-    { id: 3, guitar_name: 'Arya Sahaya', custom_image: null, custom_text: 'Inlay custom bentuk bintang emas', customer_name: 'Budi Santoso', whatsapp: '628554433221', status: 'Produksi' },
-    { id: 4, guitar_name: 'Arya Bloom', custom_image: null, custom_text: 'Fretboard rosewood, dryer warna chrome', customer_name: 'Alice Wonder', whatsapp: '628112233445', status: 'Selesai' },
-]);
+const fetchOrders = async () => {
+    isLoading.value = true;
+    try {
+        const response = await axios.get('/admin/data/orders', {
+            params: {
+                search: searchQuery.value,
+                per_page: 50 // Fetch enough for now
+            }
+        });
+        orders.value = response.data.data;
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
 
-const statusOptions = ['Produksi', 'Pending', 'Selesai'];
+onMounted(() => {
+    fetchOrders();
+});
 
-const filteredOrders = computed(() => {
-    return orders.value.filter(o => 
-        o.guitar_name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        o.customer_name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
+// Debounce search
+let searchTimeout: ReturnType<typeof setTimeout>;
+watch(searchQuery, () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        fetchOrders();
+    }, 500);
 });
 
 const getStatusClass = (status: string) => {
     switch (status) {
-        case 'Produksi': return 'bg-[#d6e9f8] text-[#3b82f6]';
-        case 'Pending': return 'bg-[#fef3c7] text-[#f59e0b]';
-        case 'Selesai': return 'bg-[#dcfce7] text-[#22c55e]';
+        case 'produksi': return 'bg-[#d6e9f8] text-[#3b82f6]';
+        case 'pending': return 'bg-[#fef3c7] text-[#f59e0b]';
+        case 'selesai': return 'bg-[#dcfce7] text-[#22c55e]';
         default: return 'bg-gray-100 text-gray-400';
     }
 };
 
-const handleStatusChange = (order: any, newStatus: string) => {
-    order.status = newStatus;
+const handleStatusChange = async (order: any, newStatus: string) => {
+    const originalStatus = order.status;
+    order.status = newStatus; // Optimistic update
+    
+    try {
+        await axios.put(`/admin/data/orders/${order.id}/status`, {
+            status: newStatus
+        });
+        // Success notification could go here
+    } catch (error) {
+        console.error('Error updating status:', error);
+        order.status = originalStatus; // Revert on error
+        alert('Gagal memperbarui status pesanan.');
+    }
 };
 
 const openWhatsApp = (phone: string) => {
-    window.open(`https://wa.me/${phone}`, '_blank');
+    // Format phone number to clean non-numeric characters
+    const cleanPhone = phone.replace(/\D/g, '');
+    // Ensure Indonesia country code
+    const finalPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone;
+    window.open(`https://wa.me/${finalPhone}`, '_blank');
 };
 </script>
 
@@ -97,23 +132,41 @@ const openWhatsApp = (phone: string) => {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
-                            <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-8 py-6 font-bold text-black border-r border-gray-50">{{ order.guitar_name }}</td>
+                            <tr v-if="isLoading">
+                                <td colspan="4" class="px-8 py-12 text-center text-gray-400">
+                                    <Loader2 class="h-8 w-8 animate-spin mx-auto mb-2" />
+                                    Loading data...
+                                </td>
+                            </tr>
+                            <tr v-else-if="orders.length === 0">
+                                <td colspan="4" class="px-8 py-12 text-center text-gray-400">
+                                    Belum ada pesanan yang masuk via custom order.
+                                </td>
+                            </tr>
+                            <tr v-else v-for="order in orders" :key="order.id" class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-8 py-6 font-bold text-black border-r border-gray-50">
+                                    {{ order.guitar?.name || 'Unknown Guitar' }}
+                                    <span class="block text-[10px] uppercase font-normal text-gray-400 mt-1">{{ order.guitar_type }} Series</span>
+                                </td>
                                 <td class="px-8 py-6 border-r border-gray-50">
-                                    <div class="flex items-center gap-4">
-                                        <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                                            <ImageIcon class="h-5 w-5" />
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs font-bold text-gray-600 w-20">Orientation:</span>
+                                            <span class="text-xs text-black uppercase">{{ order.orientation }}</span>
                                         </div>
-                                        <span class="text-xs text-gray-500 italic">{{ order.custom_text }}</span>
+                                        <div class="flex items-start gap-2">
+                                            <span class="text-xs font-bold text-gray-600 w-20 flex-shrink-0">Notes:</span>
+                                            <span class="text-xs text-gray-500 italic line-clamp-2" :title="order.notes">{{ order.notes || '-' }}</span>
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-8 py-6 border-r border-gray-50 text-center">
-                                    <span class="block font-bold text-black text-sm">{{ order.customer_name }}</span>
+                                    <span class="block font-bold text-black text-sm">{{ order.customer?.name || 'Unknown' }}</span>
                                     <button 
-                                        @click="openWhatsApp(order.whatsapp)"
+                                        @click="openWhatsApp(order.customer?.phone || '')"
                                         class="mt-1 text-[10px] text-green-600 hover:text-green-700 font-bold flex items-center justify-center gap-1 mx-auto"
                                     >
-                                        {{ order.whatsapp }}
+                                        {{ order.customer?.phone || '-' }}
                                         <ExternalLink class="h-3 w-3" />
                                     </button>
                                 </td>

@@ -108,6 +108,26 @@ const showPassword = ref(false);
                     LOG IN
                 </Button>
             </div>
+            
+            <div class="relative">
+                <div class="absolute inset-0 flex items-center">
+                    <span class="w-full border-t border-[#1b1b18]/10"></span>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase">
+                    <span class="bg-[#f9f5eb] px-2 text-[#1b1b18]/40 font-bold">Or continue with</span>
+                </div>
+            </div>
+
+            <a href="/auth/google" class="w-full">
+                <Button
+                    type="button"
+                    variant="outline"
+                    class="h-14 w-full rounded-3xl border-[#1b1b18]/10 bg-white text-sm font-bold text-[#1b1b18] hover:bg-[#f9f5eb] hover:text-[#1b1b18] transition-all flex items-center justify-center gap-3"
+                >
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5" />
+                    Login with Google
+                </Button>
+            </a>
 
             <!-- Register Link -->
             <div

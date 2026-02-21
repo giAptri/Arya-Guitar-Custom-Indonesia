@@ -9,10 +9,11 @@ import {
     TrendingUp
 } from 'lucide-vue-next';
 import { logout, dashboard, home } from '@/routes';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const page = usePage();
 const currentUrl = computed(() => page.url);
+
 
 const menuItems = [
     { 
@@ -52,14 +53,9 @@ const handleLogout = () => {
 <template>
     <aside class="fixed left-0 top-0 h-screen w-72 bg-black flex flex-col items-center py-10">
         <!-- Brand Logo -->
-        <Link :href="home()" class="mb-16 px-8">
-            <div class="flex items-center gap-2">
-                <img src="https://raw.githubusercontent.com/Arya-Guitar/Arya-Guitar-Custom-Indonesia/refs/heads/main/logo-gold.png" alt="Arya Guitar" class="h-16 w-auto" @error="(e) => (e.target as HTMLImageElement).src = '/logo-gold-placeholder.png'" />
-                <!-- Fallback to text if image fails -->
-                <div v-if="false" class="flex flex-col">
-                    <span class="text-2xl font-black text-arya-gold leading-none italic uppercase">Arya</span>
-                    <span class="text-xs text-white/50 tracking-[0.3em] uppercase">Guitar</span>
-                </div>
+        <Link :href="home().url" class="mb-16 px-8">
+            <div class="flex items-center justify-center">
+                <img src="/images/logo-guitars.png" alt="Arya Guitar" class="h-20 w-auto object-contain" />
             </div>
         </Link>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { dashboard, login, register, logout } from '@/routes';
+import { dashboard, login, logout } from '@/routes';
 import AppLogo from '@/components/AppLogo.vue';
 import { Button } from '@/components/ui/button';
 import { Menu, LogOut } from 'lucide-vue-next';
@@ -22,10 +22,10 @@ onUnmounted(() => {
 });
 
 const navItems = [
-    { title: 'Beranda', href: '#' },
-    { title: 'Katalog', href: '#' },
-    { title: 'Tentang Kami', href: '#' },
-    { title: 'Support', href: '#' },
+    { title: 'Beranda', href: '/' },
+    { title: 'Katalog', href: '#catalog' },
+    { title: 'Tentang Kami', href: '#about' },
+    { title: 'Support', href: '#contact' },
 ];
 
 const logoutForm = useForm({});
@@ -57,16 +57,12 @@ const handleLogout = () => {
                 </a>
                 <!-- Auth Links -->
                 <template v-if="!$page.props.auth.user">
-                    <Link :href="register()" class="text-sm font-medium text-white/80 transition-colors hover:text-arya-gold">
-                        <Button class="bg-arya-gold font-bold text-black hover:bg-arya-gold/90">
-                            Register
-                        </Button>
-                    </Link>
                     <Link :href="login()">
-                        <Button class="bg-arya-gold font-bold text-black hover:bg-arya-gold/90">
-                            Login
+                        <Button class="bg-arya-gold font-black text-black hover:bg-white hover:text-black transition-all rounded-full px-8 shadow-[0_0_20px_rgba(248,184,3,0.3)] hover:shadow-[0_0_30px_rgba(248,184,3,0.6)] hover:-translate-y-1">
+                            Masuk
                         </Button>
                     </Link>
+
                 </template>
                 <template v-else>
                     <Link v-if="$page.props.auth.user.role === 'admin'" :href="dashboard().url">

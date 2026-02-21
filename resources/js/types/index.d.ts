@@ -24,6 +24,17 @@ export type AppPageProps<
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    flash: {
+        message?: string;
+        new_order?: {
+            order_code: string;
+            guitar_type?: string;
+            estimated_price?: number | null;
+            customer_name: string;
+            guitar?: { name: string };
+            customer: { name: string };
+        };
+    };
 };
 
 export interface User {

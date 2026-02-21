@@ -18,6 +18,9 @@ class Order extends Model
         'orientation',
         'notes',
         'estimated_price',
+        'customer_name',
+        'customer_phone',
+        'reference_photo_path',
         'status',
     ];
 

@@ -3,7 +3,7 @@
 
 <template>
     <section class="bg-arya-dark py-32 overflow-hidden">
-        <div class="container mx-auto px-4">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col items-center gap-16 lg:flex-row">
                 <!-- Owner Image -->
                 <div class="relative flex-1">

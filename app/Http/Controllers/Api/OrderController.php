@@ -58,7 +58,8 @@ class OrderController extends Controller
             'orientation' => ['required', Rule::in(['right', 'left'])],
 
             'notes' => ['nullable', 'string'],
-            'estimated_price' => ['nullable', 'integer', 'min:0'],
+            'estimated_price' => ['nullable', 'numeric', 'min:0'],
+            'reference_photo' => ['nullable', 'image', 'max:2048'], // 2MB Max
         ]);
 
         $user = $request->user(); // Authenticated User
@@ -78,8 +79,6 @@ class OrderController extends Controller
              }
         } else {
             // Create new customer profile linked to this user
-            // Check if phone already exists in another customer record (orphan or other user?)
-            // Ideally unique phone globally, but for now `firstOrCreate` with user_id is safer
              $customer = Customer::create([
                  'user_id' => $user->id,
                  'name' => $data['customer_name'],
@@ -87,19 +86,28 @@ class OrderController extends Controller
              ]);
         }
 
+        // Handle Photo Upload
+        $photoPath = null;
+        if ($request->hasFile('reference_photo')) {
+            $photoPath = $request->file('reference_photo')->store('orders/photos', 'public');
+        }
+
         $order = Order::create([
             // 'order_code' handled by Model boot
             'customer_id' => $customer->id,
+            'customer_name' => $data['customer_name'], // Snapshot
+            'customer_phone' => $phone, // Snapshot
             'guitar_id' => $data['guitar_id'] ?? null,
             'guitar_type' => $data['guitar_type'],
             'pickup_config' => $data['pickup_config'] ?? null,
             'orientation' => $data['orientation'],
             'notes' => $data['notes'] ?? null,
             'estimated_price' => $data['estimated_price'] ?? null,
+            'reference_photo_path' => $photoPath,
             'status' => 'pending',
         ]);
 
-        return new OrderResource($order->load(['customer', 'guitar']));
+        return redirect()->back()->with('new_order', $order->load(['customer', 'guitar']));
     }
 
     public function show(Request $request, Order $order)

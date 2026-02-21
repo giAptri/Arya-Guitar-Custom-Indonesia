@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import AuthBase from '@/layouts/LandingAuthLayout.vue';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
@@ -16,11 +12,11 @@ defineProps<{
 </script>
 
 <template>
-    <AuthLayout
-        title="Forgot password"
-        description="Enter your email to receive a password reset link"
+    <AuthBase
+        title="Lupa Password?"
+        description="JANGAN PANIK, KAMI BANTU"
     >
-        <Head title="Forgot password" />
+        <Head title="Forgot Password" />
 
         <div
             v-if="status"
@@ -29,37 +25,42 @@ defineProps<{
             {{ status }}
         </div>
 
-        <div class="space-y-6">
-            <Form v-bind="email.form()" v-slot="{ errors, processing }">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        autocomplete="off"
-                        autofocus
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="errors.email" />
-                </div>
-
-                <div class="my-6 flex items-center justify-start">
-                    <Button
-                        class="w-full"
-                        :disabled="processing"
-                        data-test="email-password-reset-link-button"
-                    >
-                        <Spinner v-if="processing" />
-                        Email password reset link
-                    </Button>
-                </div>
-            </Form>
-
-            <div class="space-x-1 text-center text-sm text-muted-foreground">
-                <span>Or, return to</span>
-                <TextLink :href="login()">log in</TextLink>
+        <Form
+            v-bind="email.form()"
+            v-slot="{ errors, processing }"
+            class="flex flex-col gap-8"
+        >
+            <!-- Email Input -->
+            <div class="space-y-1">
+                <label for="email" class="text-[11px] font-semibold text-[#1b1b18]/50">Email Address</label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    required
+                    autofocus
+                    placeholder="email@example.com"
+                    class="w-full border-b-[1.5px] border-[#1b1b18]/10 bg-transparent py-2 text-sm font-medium text-[#1b1b18] outline-none transition-colors focus:border-arya-gold"
+                />
+                <InputError :message="errors.email" />
             </div>
-        </div>
-    </AuthLayout>
+
+            <!-- Submit Button -->
+            <div class="mt-4">
+                <Button
+                    type="submit"
+                    class="h-14 w-full rounded-3xl bg-[#efcc53] text-sm font-black tracking-widest text-[#1b1b18] shadow-lg shadow-[#efcc53]/20 hover:bg-[#efcc53]/90 active:scale-[0.98] transition-all"
+                    :disabled="processing"
+                >
+                    KIRIM LINK RESET
+                </Button>
+            </div>
+
+            <!-- Back to Login -->
+            <div class="mt-4 text-center text-xs font-semibold text-[#1b1b18]/40">
+                Instantly remembered?
+                <Link :href="login()" class="text-[#1b1b18] hover:underline underline-offset-4 ml-1">Log in</Link>
+            </div>
+        </Form>
+    </AuthBase>
 </template>

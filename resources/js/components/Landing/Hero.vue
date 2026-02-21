@@ -11,7 +11,7 @@ import { Play } from 'lucide-vue-next';
             <div class="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-arya-gold/5 blur-[100px]"></div>
         </div>
 
-        <div class="container relative z-10 mx-auto px-4 lg:px-8">
+        <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col items-center gap-12 lg:flex-row">
                 <!-- Text Content -->
                 <div class="flex-1 text-center lg:text-left">
