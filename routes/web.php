@@ -38,8 +38,6 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
     })->name('admin.orders');
 });
 
-// Google Auth
-Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirectToGoogle'])->name('auth.google');
-Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'handleGoogleCallback']);
+
 
 require __DIR__ . '/settings.php';
