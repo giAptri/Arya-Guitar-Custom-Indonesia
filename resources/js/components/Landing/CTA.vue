@@ -90,7 +90,7 @@ const submitOrder = () => {
                             Kreasikan Sekarang!
                         </Button>
                         
-                        <a href="https://wa.me/6285788241715" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto">
+                        <a href="https://wa.me/6281381395006" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto">
                             <Button variant="outline" class="w-full border-green-500 text-green-500 hover:bg-green-500 hover:text-white font-bold rounded-full h-14 px-8 text-base transition-all duration-300 flex items-center justify-center gap-2">
                                 Konsultasi Sekarang
                                 <Phone class="h-4 w-4 fill-current" />
@@ -130,7 +130,7 @@ const submitOrder = () => {
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <Link :href="login()">
-                                <Button variant="outline" class="w-full border-white/10 text-white hover:bg-arya-gold hover:text-white font-bold py-6">Login</Button>
+                                <Button variant="outline" class="w-full border-white/10 text-gold hover:bg-arya-gold hover:text-white font-bold py-6">Login</Button>
                             </Link>
                             <Link :href="register()">
                                 <Button class="w-full bg-arya-gold text-black hover:bg-white hover:text-black font-bold py-6">Register</Button>
@@ -160,7 +160,7 @@ const submitOrder = () => {
                             </div>
 
                             <a 
-                                :href="`https://wa.me/6285788241715?text=Halo%2C%20saya%20${encodeURIComponent(page.props.flash.new_order.customer_name)}%20ingin%20diskusi%20custom%20order%20${encodeURIComponent(page.props.flash.new_order.order_code)}.`"
+                                :href="`https://wa.me/6281280160417?text=Halo%2C%20saya%20${encodeURIComponent(page.props.flash.new_order.customer_name)}%20ingin%20diskusi%20custom%20order%20${encodeURIComponent(page.props.flash.new_order.order_code)}.`"
                                 target="_blank"
                                 class="inline-flex items-center justify-center gap-2 w-full bg-green-500 text-white font-black py-4 rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/20"
                             >

@@ -21,11 +21,6 @@ import { Play } from 'lucide-vue-next';
                     <p class="mb-10 max-w-xl text-lg text-white/80 mx-auto lg:mx-0">
                         Bikin Gitar Impianmu sendiri dengan desain yang kamu sukai.
                     </p>
-                    <div class="flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-                        <Button size="lg" class="bg-arya-gold px-8 py-7 text-lg font-bold text-black hover:bg-arya-gold/90 shadow-[0_0_20px_rgba(248,184,3,0.3)]">
-                            Custom Sekarang!
-                        </Button>
-                    </div>
                 </div>
 
                 <!-- Hero Image Holder -->

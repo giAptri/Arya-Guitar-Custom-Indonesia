@@ -31,7 +31,7 @@ import { Facebook, Youtube, Instagram, Mail, Phone, MapPin } from 'lucide-vue-ne
                     <ul class="space-y-4 text-sm text-white/60">
                         <li class="flex items-center gap-3">
                             <Phone class="h-4 w-4 text-white/40" />
-                            +62 812-3456-7890
+                            +62 813-8139-5006
                         </li>
                         <li class="flex items-center gap-3">
                             <Mail class="h-4 w-4 text-white/40" />
@@ -66,8 +66,8 @@ import { Facebook, Youtube, Instagram, Mail, Phone, MapPin } from 'lucide-vue-ne
 
             <!-- Copyright -->
             <div class="text-center">
-                <p class="text-sm font-bold text-white/40">
-                    © 2024 Arya Guitar Custom Indonesia. All rights reserved.
+                <p class="text-sm font-bold text-arya-gold/40">
+                    © 2026 Arya Guitar Custom Indonesia. All rights reserved.
                 </p>
             </div>
         </div>
