@@ -5,15 +5,62 @@ import {
     Search, 
     Image as ImageIcon,
     ExternalLink,
-    Loader2
+    Loader2,
+    X,
+    ZoomIn,
+    Eye,
+    Guitar,
+    User,
+    FileText,
+    Calendar,
+    DollarSign,
+    Phone
 } from 'lucide-vue-next';
 import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 
+interface Order {
+    id: number;
+    order_code: string;
+    guitar_type: string;
+    orientation: string;
+    pickup_config: string | null;
+    notes: string;
+    estimated_price: number | null;
+    status: string;
+    reference_photo: string | null;
+    customer_name: string;
+    customer_phone: string;
+    created_at: string;
+    updated_at: string;
+    guitar?: { name: string };
+    customer?: { name: string; phone: string };
+}
+
 const searchQuery = ref('');
-const orders = ref([]);
+const orders = ref<Order[]>([]);
 const isLoading = ref(true);
 const statusOptions = ['pending', 'produksi', 'selesai'];
+
+// Lightbox state for reference photos
+const lightboxPhoto = ref<string | null>(null);
+const openLightbox = (url: string) => { lightboxPhoto.value = url; };
+const closeLightbox = () => { lightboxPhoto.value = null; };
+
+// Detail modal state
+const detailOrder = ref<Order | null>(null);
+const openDetail = (order: Order) => { detailOrder.value = order; };
+const closeDetail = () => { detailOrder.value = null; };
+
+// Helpers
+const formatPrice = (price: number | null) => {
+    if (!price) return '-';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+};
+const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+};
 
 const fetchOrders = async () => {
     isLoading.value = true;
@@ -147,16 +194,42 @@ const openWhatsApp = (phone: string) => {
                                 <td class="px-8 py-6 font-bold text-black border-r border-gray-50">
                                     {{ order.guitar?.name || 'Unknown Guitar' }}
                                     <span class="block text-[10px] uppercase font-normal text-gray-400 mt-1">{{ order.guitar_type }} Series</span>
+                                    <button 
+                                        @click="openDetail(order)"
+                                        class="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-[#2d5a7d] hover:text-[#1e3f57] bg-[#2d5a7d]/10 hover:bg-[#2d5a7d]/20 px-3 py-1.5 rounded-lg transition-all"
+                                    >
+                                        <Eye class="h-3.5 w-3.5" />
+                                        Detail
+                                    </button>
                                 </td>
                                 <td class="px-8 py-6 border-r border-gray-50">
-                                    <div class="flex flex-col gap-1">
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs font-bold text-gray-600 w-20">Orientation:</span>
-                                            <span class="text-xs text-black uppercase">{{ order.orientation }}</span>
+                                    <div class="flex gap-4">
+                                        <!-- Reference Photo Thumbnail -->
+                                        <div class="flex-shrink-0">
+                                            <div 
+                                                v-if="order.reference_photo" 
+                                                @click="openLightbox(order.reference_photo)"
+                                                class="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100 cursor-pointer group hover:border-arya-gold transition-colors shadow-sm"
+                                            >
+                                                <img :src="order.reference_photo" alt="Foto Referensi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                                    <ZoomIn class="h-4 w-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                            </div>
+                                            <div v-else class="w-16 h-16 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50">
+                                                <ImageIcon class="h-5 w-5 text-gray-300" />
+                                            </div>
                                         </div>
-                                        <div class="flex items-start gap-2">
-                                            <span class="text-xs font-bold text-gray-600 w-20 flex-shrink-0">Notes:</span>
-                                            <span class="text-xs text-gray-500 italic line-clamp-2" :title="order.notes">{{ order.notes || '-' }}</span>
+                                        <!-- Details -->
+                                        <div class="flex flex-col gap-1 justify-center">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-bold text-gray-600 w-20">Orientation:</span>
+                                                <span class="text-xs text-black uppercase">{{ order.orientation }}</span>
+                                            </div>
+                                            <div class="flex items-start gap-2">
+                                                <span class="text-xs font-bold text-gray-600 w-20 flex-shrink-0">Notes:</span>
+                                                <span class="text-xs text-gray-500 italic line-clamp-2" :title="order.notes">{{ order.notes || '-' }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -185,6 +258,144 @@ const openWhatsApp = (phone: string) => {
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+
+        <!-- Order Detail Modal -->
+        <div v-if="detailOrder" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/70 backdrop-blur-md" @click="closeDetail"></div>
+            <div class="relative w-full max-w-2xl bg-[#1a1a2e] border border-white/10 rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
+                <!-- Header -->
+                <div class="sticky top-0 z-10 bg-gradient-to-r from-[#d4a017] to-[#b88b14] px-8 py-5 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-black text-white">Detail Pesanan</h2>
+                        <p class="text-white/70 text-xs mt-0.5 font-mono">{{ detailOrder.order_code }}</p>
+                    </div>
+                    <button @click="closeDetail" class="text-white/60 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                        <X class="h-5 w-5" />
+                    </button>
+                </div>
+
+                <div class="p-8 space-y-6">
+                    <!-- Status Badge -->
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black text-white/30 uppercase tracking-widest">Status Pesanan</span>
+                        <span 
+                            class="px-4 py-1.5 rounded-full text-xs font-black uppercase"
+                            :class="{
+                                'bg-yellow-500/20 text-yellow-400': detailOrder.status === 'pending',
+                                'bg-blue-500/20 text-blue-400': detailOrder.status === 'produksi',
+                                'bg-green-500/20 text-green-400': detailOrder.status === 'selesai',
+                            }"
+                        >
+                            {{ detailOrder.status }}
+                        </span>
+                    </div>
+
+                    <!-- Guitar Info Section -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <Guitar class="h-4 w-4 text-arya-gold" />
+                            <span class="text-xs font-black text-white/50 uppercase tracking-widest">Informasi Gitar</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">Nama Gitar</span>
+                                <span class="text-white font-bold text-sm">{{ detailOrder.guitar?.name || 'Custom Guitar' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">Tipe</span>
+                                <span class="text-white font-bold text-sm uppercase">{{ detailOrder.guitar_type }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">Orientation</span>
+                                <span class="text-white font-bold text-sm uppercase">{{ detailOrder.orientation === 'right' ? 'Kanan (Standard)' : 'Kiri (Lefty)' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">Pickup Config</span>
+                                <span class="text-white font-bold text-sm">{{ detailOrder.pickup_config || '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Section -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <DollarSign class="h-4 w-4 text-arya-gold" />
+                            <span class="text-xs font-black text-white/50 uppercase tracking-widest">Estimasi Bajet</span>
+                        </div>
+                        <span class="text-2xl font-black text-arya-gold">{{ formatPrice(detailOrder.estimated_price) }}</span>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <FileText class="h-4 w-4 text-arya-gold" />
+                            <span class="text-xs font-black text-white/50 uppercase tracking-widest">Detail Kustom / Notes</span>
+                        </div>
+                        <p class="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{{ detailOrder.notes || 'Tidak ada catatan.' }}</p>
+                    </div>
+
+                    <!-- Reference Photo Section -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <ImageIcon class="h-4 w-4 text-arya-gold" />
+                            <span class="text-xs font-black text-white/50 uppercase tracking-widest">Foto Referensi</span>
+                        </div>
+                        <div v-if="detailOrder.reference_photo" class="relative group cursor-pointer" @click="openLightbox(detailOrder.reference_photo); closeDetail()">
+                            <img :src="detailOrder.reference_photo" alt="Foto Referensi" class="w-full max-h-64 object-contain rounded-xl border border-white/10" />
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors rounded-xl flex items-center justify-center">
+                                <ZoomIn class="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                        </div>
+                        <div v-else class="flex items-center justify-center py-6 border-2 border-dashed border-white/10 rounded-xl">
+                            <span class="text-white/30 text-sm">Tidak ada foto referensi</span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Section -->
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <User class="h-4 w-4 text-arya-gold" />
+                            <span class="text-xs font-black text-white/50 uppercase tracking-widest">Informasi Pelanggan</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">Nama</span>
+                                <span class="text-white font-bold text-sm">{{ detailOrder.customer?.name || detailOrder.customer_name || '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] text-white/30 uppercase font-bold mb-1">WhatsApp</span>
+                                <button 
+                                    @click="openWhatsApp(detailOrder.customer?.phone || detailOrder.customer_phone || '')"
+                                    class="text-green-400 hover:text-green-300 font-bold text-sm flex items-center gap-1.5 transition-colors"
+                                >
+                                    <Phone class="h-3.5 w-3.5" />
+                                    {{ detailOrder.customer?.phone || detailOrder.customer_phone || '-' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timestamps -->
+                    <div class="flex items-center gap-2 text-white/20 text-[10px] pt-2">
+                        <Calendar class="h-3 w-3" />
+                        <span>Dibuat: {{ formatDate(detailOrder.created_at) }}</span>
+                        <span class="mx-1">•</span>
+                        <span>Diperbarui: {{ formatDate(detailOrder.updated_at) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Lightbox Modal -->
+        <div v-if="lightboxPhoto" class="fixed inset-0 z-[60] flex items-center justify-center p-4" @click.self="closeLightbox">
+            <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeLightbox"></div>
+            <div class="relative max-w-3xl max-h-[85vh] animate-in fade-in zoom-in duration-200">
+                <button @click="closeLightbox" class="absolute -top-3 -right-3 z-10 bg-white text-black rounded-full p-1.5 shadow-lg hover:bg-gray-100 transition-colors">
+                    <X class="h-5 w-5" />
+                </button>
+                <img :src="lightboxPhoto" alt="Foto Referensi" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain" />
             </div>
         </div>
     </AdminLayout>
