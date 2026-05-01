@@ -42,6 +42,49 @@ const orders = ref<Order[]>([]);
 const isLoading = ref(true);
 const statusOptions = ['pending', 'produksi', 'selesai'];
 
+// ── Filter Periode ────────────────────────────────────────────
+const currentYear  = new Date().getFullYear();
+const currentMonth = new Date().getMonth() + 1;
+
+const filterYear  = ref<number | ''>(currentYear);
+const filterMonth = ref<number | ''>(currentMonth);
+
+const monthsList = [
+    { value: 1,  label: 'Januari' },
+    { value: 2,  label: 'Februari' },
+    { value: 3,  label: 'Maret' },
+    { value: 4,  label: 'April' },
+    { value: 5,  label: 'Mei' },
+    { value: 6,  label: 'Juni' },
+    { value: 7,  label: 'Juli' },
+    { value: 8,  label: 'Agustus' },
+    { value: 9,  label: 'September' },
+    { value: 10, label: 'Oktober' },
+    { value: 11, label: 'November' },
+    { value: 12, label: 'Desember' },
+];
+
+const yearsList = Array.from({ length: 5 }, (_, i) => currentYear - i);
+
+const activePeriodLabel = computed(() => {
+    if (!filterMonth.value && !filterYear.value) return 'Semua Periode';
+    const ml = filterMonth.value
+        ? monthsList.find(m => m.value === filterMonth.value)?.label
+        : null;
+    const yl = filterYear.value ? String(filterYear.value) : null;
+    return [ml, yl].filter(Boolean).join(' ');
+});
+
+const isFilterActive = computed(() =>
+    filterMonth.value !== '' || filterYear.value !== ''
+);
+
+function resetFilter() {
+    filterYear.value  = '';
+    filterMonth.value = '';
+    fetchOrders();
+}
+
 // Lightbox state for reference photos
 const lightboxPhoto = ref<string | null>(null);
 const openLightbox = (url: string) => { lightboxPhoto.value = url; };
@@ -65,12 +108,14 @@ const formatDate = (dateStr: string) => {
 const fetchOrders = async () => {
     isLoading.value = true;
     try {
-        const response = await axios.get('/admin/data/orders', {
-            params: {
-                search: searchQuery.value,
-                per_page: 50 // Fetch enough for now
-            }
-        });
+        const params: Record<string, any> = {
+            search:   searchQuery.value,
+            per_page: 100,
+        };
+        if (filterYear.value)  params.year  = filterYear.value;
+        if (filterMonth.value) params.month = filterMonth.value;
+
+        const response = await axios.get('/admin/data/orders', { params });
         orders.value = response.data.data;
     } catch (error) {
         console.error('Error fetching orders:', error);
@@ -137,33 +182,78 @@ const openWhatsApp = (phone: string) => {
 
             <div class="mt-12 bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-50 overflow-hidden">
                 <!-- Toolbar -->
-                <div class="p-8 flex items-center justify-between border-b border-gray-50 gap-4">
-                    <div class="flex items-center gap-2 text-sm font-bold text-gray-400">
-                        <span>Show</span>
-                        <select class="bg-gray-50 border-none rounded-lg px-2 py-1 text-black focus:ring-0">
-                            <option>7</option>
-                            <option>10</option>
-                            <option>20</option>
-                        </select>
-                        <span>entries</span>
-                    </div>
-
-                    <div class="flex items-center gap-4 flex-1 max-w-2xl px-8">
-                        <div class="relative w-full">
+                <div class="p-6 flex flex-col gap-4 border-b border-gray-50">
+                    <!-- Row 1: Search + Refresh -->
+                    <div class="flex items-center gap-4">
+                        <div class="relative flex-1">
                             <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
-                            <input 
+                            <input
+                                id="orders-search"
                                 v-model="searchQuery"
-                                type="text" 
-                                placeholder="Search..." 
+                                type="text"
+                                placeholder="Cari kode pesanan, nama pelanggan..."
                                 class="w-full bg-gray-50 border-none rounded-xl pl-12 pr-4 py-3 text-sm focus:ring-2 focus:ring-arya-gold/20 transition-all"
                             />
                         </div>
-                    </div>
-
-                    <div class="hidden lg:block">
-                        <button class="bg-[#2d5a7d] hover:bg-[#254a68] text-white px-6 py-3 rounded-xl font-bold text-sm">
+                        <button
+                            id="btn-refresh-orders"
+                            @click="fetchOrders"
+                            class="bg-[#2d5a7d] hover:bg-[#254a68] text-white px-6 py-3 rounded-xl font-bold text-sm transition-colors flex-shrink-0 flex items-center gap-2">
                             Refresh Data
                         </button>
+                    </div>
+
+                    <!-- Row 2: Filter Periode -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Ikon Kalender -->
+                        <div class="flex items-center gap-1.5 text-xs font-black text-gray-400 uppercase tracking-wider flex-shrink-0">
+                            <Calendar class="h-4 w-4 text-arya-gold" />
+                            Filter Periode:
+                        </div>
+
+                        <!-- Pilih Bulan -->
+                        <select
+                            id="filter-order-month"
+                            v-model.number="filterMonth"
+                            class="px-3 py-2 text-sm font-semibold border-2 border-gray-200 rounded-xl focus:outline-none focus:border-arya-gold transition-colors cursor-pointer bg-white text-gray-700 hover:border-arya-gold">
+                            <option value="">Semua Bulan</option>
+                            <option v-for="m in monthsList" :key="m.value" :value="m.value">{{ m.label }}</option>
+                        </select>
+
+                        <!-- Pilih Tahun -->
+                        <select
+                            id="filter-order-year"
+                            v-model.number="filterYear"
+                            class="px-3 py-2 text-sm font-semibold border-2 border-gray-200 rounded-xl focus:outline-none focus:border-arya-gold transition-colors cursor-pointer bg-white text-gray-700 hover:border-arya-gold">
+                            <option value="">Semua Tahun</option>
+                            <option v-for="y in yearsList" :key="y" :value="y">{{ y }}</option>
+                        </select>
+
+                        <!-- Tombol Terapkan -->
+                        <button
+                            id="btn-apply-order-filter"
+                            @click="fetchOrders"
+                            class="px-5 py-2 bg-arya-gold text-black text-sm font-black rounded-xl hover:brightness-110 transition-all hover:-translate-y-0.5 active:scale-95">
+                            Terapkan
+                        </button>
+
+                        <!-- Tombol Reset -->
+                        <button
+                            v-if="isFilterActive"
+                            id="btn-reset-order-filter"
+                            @click="resetFilter"
+                            class="px-4 py-2 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl hover:bg-gray-200 transition-all flex items-center gap-1.5">
+                            <X class="h-3.5 w-3.5" />
+                            Reset
+                        </button>
+
+                        <!-- Badge Periode Aktif -->
+                        <div class="ml-auto">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs font-bold text-amber-700">
+                                <span class="w-2 h-2 rounded-full bg-arya-gold animate-pulse inline-block"></span>
+                                {{ activePeriodLabel }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 

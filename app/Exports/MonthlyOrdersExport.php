@@ -7,13 +7,28 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class MonthlyOrdersExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
+class MonthlyOrdersExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithTitle
 {
+    protected int $year;
+    protected int $month;
+
+    public function __construct(int $year, int $month)
+    {
+        $this->year  = $year;
+        $this->month = $month;
+    }
+
+    public function title(): string
+    {
+        return sprintf('Laporan %04d-%02d', $this->year, $this->month);
+    }
+
     public function collection()
     {
-        return Order::whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
+        return Order::whereYear('created_at', $this->year)
+            ->whereMonth('created_at', $this->month)
             ->get();
     }
 

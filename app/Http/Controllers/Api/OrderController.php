@@ -13,10 +13,12 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $status = $request->query('status'); // pending|produksi|selesai
-        $search = $request->query('search');
+        $status  = $request->query('status'); // pending|produksi|selesai
+        $search  = $request->query('search');
+        $year    = $request->query('year');
+        $month   = $request->query('month');
         $perPage = (int) $request->query('per_page', 10);
-        $user = $request->user();
+        $user    = $request->user();
 
         $q = Order::query()
             ->with(['customer', 'guitar'])
@@ -24,14 +26,28 @@ class OrderController extends Controller
 
         // RBAC Filter
         if ($user->role !== 'admin') {
-             if (!$user->customer) {
-                 return OrderResource::collection([]);
-             }
-             $q->where('customer_id', $user->customer->id);
+            if (!$user->customer) {
+                return OrderResource::collection([]);
+            }
+            $q->where('customer_id', $user->customer->id);
         }
 
-        if ($status) $q->where('status', $status);
+        // Filter Status
+        if ($status) {
+            $q->where('status', $status);
+        }
 
+        // Filter Periode — Tahun
+        if ($year) {
+            $q->whereYear('created_at', (int) $year);
+        }
+
+        // Filter Periode — Bulan
+        if ($month) {
+            $q->whereMonth('created_at', (int) $month);
+        }
+
+        // Filter Pencarian
         if ($search) {
             $q->where(function ($sub) use ($search) {
                 $sub->where('order_code', 'like', "%{$search}%")

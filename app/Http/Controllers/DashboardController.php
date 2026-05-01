@@ -16,70 +16,87 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
 {
-    public function exportExcel()
+    /**
+     * Export Excel — mendukung parameter ?year=&month=
+     */
+    public function exportExcel(Request $request)
     {
-        return Excel::download(new MonthlyOrdersExport, 'laporan-penjualan-' . now()->format('Y-m') . '.xlsx');
+        $year  = (int) $request->query('year',  now()->year);
+        $month = (int) $request->query('month', now()->month);
+
+        $filename = 'laporan-penjualan-' . sprintf('%04d-%02d', $year, $month) . '.xlsx';
+
+        return Excel::download(new MonthlyOrdersExport($year, $month), $filename);
     }
 
-    public function exportPdf()
+    /**
+     * Export PDF — mendukung parameter ?year=&month=
+     */
+    public function exportPdf(Request $request)
     {
-        $orders = Order::whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
+        $year  = (int) $request->query('year',  now()->year);
+        $month = (int) $request->query('month', now()->month);
+
+        $orders = Order::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
             ->get();
 
         $totalIncome = $orders->sum('estimated_price');
 
+        $periodLabel = Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y');
+
         $pdf = Pdf::loadView('exports.monthly_orders_pdf', [
-            'orders' => $orders,
-            'totalIncome' => $totalIncome
+            'orders'      => $orders,
+            'totalIncome' => $totalIncome,
+            'periodLabel' => $periodLabel,
         ]);
 
-        return $pdf->download('laporan-penjualan-' . now()->format('Y-m') . '.pdf');
+        $filename = 'laporan-penjualan-' . sprintf('%04d-%02d', $year, $month) . '.pdf';
+
+        return $pdf->download($filename);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // 1. Total Produk (Active Guitars)
+        // Ambil periode dari query string, default ke bulan & tahun sekarang
+        $year  = (int) $request->query('year',  now()->year);
+        $month = (int) $request->query('month', now()->month);
+
+        // 1. Total Produk (Active Guitars) — tidak bergantung periode
         $totalProducts = Guitar::where('is_active', true)->count();
 
-        // 2. Pesanan Bulan Ini
-        $ordersThisMonth = Order::whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
+        // 2. Pesanan Periode yang Dipilih
+        $ordersThisPeriod = Order::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
             ->count();
 
-        // 3. Jumlah Pelanggan (Registered & Ordered)
+        // 3. Jumlah Pelanggan yang pernah pesan
         $totalCustomers = Customer::has('orders')->count();
 
-        // 4. Grafik Penjualan (Income vs Expenses)
-        // For now, Expenses = 0. Income = Sum of estimated_price from Orders.
-        // We will fetch data for the current year, grouped by month.
-
-        // 4. Grafik Penjualan (Income vs Expenses)
-        // Using Collection method to be database-agnostic (works with MySQL, SQLite, PostgreSQL)
-        $salesData = Order::whereYear('created_at', now()->year)
+        // 4. Grafik Penjualan per bulan untuk tahun yang dipilih
+        $salesData = Order::whereYear('created_at', $year)
             ->get()
-            ->groupBy(function ($date) {
-                return \Carbon\Carbon::parse($date->created_at)->format('n'); // 1-12
+            ->groupBy(function ($order) {
+                return Carbon::parse($order->created_at)->format('n'); // 1-12
             })
             ->map(function ($row) {
                 return $row->sum('estimated_price');
             })
             ->toArray();
 
-        // Prepare chart data for all 12 months
         $months = [
-            1 => 'Jan',
-            2 => 'Feb',
-            3 => 'Mar',
-            4 => 'Apr',
-            5 => 'Mei',
-            6 => 'Jun',
-            7 => 'Jul',
-            8 => 'Agu',
-            9 => 'Sep',
+            1  => 'Jan',
+            2  => 'Feb',
+            3  => 'Mar',
+            4  => 'Apr',
+            5  => 'Mei',
+            6  => 'Jun',
+            7  => 'Jul',
+            8  => 'Agu',
+            9  => 'Sep',
             10 => 'Okt',
             11 => 'Nov',
-            12 => 'Des'
+            12 => 'Des',
         ];
 
         $chartData = [];
@@ -92,37 +109,39 @@ class DashboardController extends Controller
             }
 
             $chartData[] = [
-                'label' => $label,
-                'income' => $income,
-                'expense' => 0, // Placeholder
+                'label'   => $label,
+                'income'  => $income,
+                'expense' => 0,
             ];
         }
 
-        // Calculate height percentages for the chart
-        // Avoid division by zero
-        $maxScale = $maxIncome > 0 ? $maxIncome : 100; // Default scale if no data
+        $maxScale = $maxIncome > 0 ? $maxIncome : 100;
 
         foreach ($chartData as &$data) {
-            $data['height'] = round(($data['income'] / $maxScale) * 100) . '%';
+            $data['height']           = round(($data['income'] / $maxScale) * 100) . '%';
             $data['formatted_income'] = 'Rp ' . number_format($data['income'], 0, ',', '.');
         }
+
+        $periodLabel = Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y');
 
         return Inertia::render('Dashboard', [
             'stats' => [
                 [
                     'title' => 'Total Produk',
-                    'value' => $totalProducts
+                    'value' => $totalProducts,
                 ],
                 [
-                    'title' => 'Pesanan Bulan Ini',
-                    'value' => $ordersThisMonth
+                    'title' => 'Pesanan ' . $periodLabel,
+                    'value' => $ordersThisPeriod,
                 ],
                 [
                     'title' => 'Jumlah Pelanggan',
-                    'value' => $totalCustomers
+                    'value' => $totalCustomers,
                 ],
             ],
-            'salesChart' => $chartData,
+            'salesChart'    => $chartData,
+            'selectedYear'  => $year,
+            'selectedMonth' => $month,
         ]);
     }
 }
