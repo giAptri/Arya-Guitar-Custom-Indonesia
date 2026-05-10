@@ -108,6 +108,15 @@ class OrderController extends Controller
             $photoPath = $request->file('reference_photo')->store('orders/photos', 'public');
         }
 
+        // Jika estimated_price tidak diisi, ambil base_price dari gitar (jika ada)
+        $estimatedPrice = $data['estimated_price'] ?? null;
+        if (is_null($estimatedPrice) && !empty($data['guitar_id'])) {
+            $guitar = \App\Models\Guitar::find($data['guitar_id']);
+            if ($guitar && $guitar->base_price) {
+                $estimatedPrice = $guitar->base_price;
+            }
+        }
+
         $order = Order::create([
             // 'order_code' handled by Model boot
             'customer_id' => $customer->id,
@@ -118,7 +127,7 @@ class OrderController extends Controller
             'pickup_config' => $data['pickup_config'] ?? null,
             'orientation' => $data['orientation'],
             'notes' => $data['notes'] ?? null,
-            'estimated_price' => $data['estimated_price'] ?? null,
+            'estimated_price' => $estimatedPrice,
             'reference_photo_path' => $photoPath,
             'status' => 'pending',
         ]);

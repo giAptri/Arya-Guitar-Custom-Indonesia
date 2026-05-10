@@ -42,7 +42,7 @@ const orders = ref<Order[]>([]);
 const isLoading = ref(true);
 const statusOptions = ['pending', 'produksi', 'selesai'];
 
-// ── Filter Periode ────────────────────────────────────────────
+// Filter Periode
 const currentYear  = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 

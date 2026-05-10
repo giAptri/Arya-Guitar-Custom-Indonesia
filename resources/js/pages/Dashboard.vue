@@ -8,7 +8,7 @@ const user = computed(() => page.props.auth.user);
 
 const props = defineProps<{
     stats: Array<{ title: string; value: number }>;
-    salesChart: Array<{ label: string; height: string; income: number; formatted_income: string }>;
+    salesChart: Array<{ label: string; count: number; height: string; income: number; formatted_income: string }>;
     selectedYear: number;
     selectedMonth: number;
 }>();
@@ -158,10 +158,10 @@ const pdfUrl = computed(() =>
                         class="w-full h-full flex items-end justify-center relative group">
                         <!-- Bar -->
                         <div class="w-full rounded-t-sm transition-all duration-500 hover:brightness-110 relative"
-                            :class="bar.income > 0 ? 'bg-arya-gold' : 'bg-gray-100'"
+                            :class="bar.count > 0 ? 'bg-arya-gold' : 'bg-gray-100'"
                             :style="{ height: bar.height === '0%' ? '4px' : bar.height }">
                             <!-- Tooltip -->
-                            <div v-if="bar.income > 0"
+                            <div v-if="bar.count > 0"
                                 class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
                                 <div class="bg-black text-white text-xs py-1 px-2 rounded whitespace-nowrap font-bold shadow-lg">
                                     {{ bar.formatted_income }}

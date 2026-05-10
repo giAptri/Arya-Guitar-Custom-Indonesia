@@ -160,7 +160,7 @@ const submitOrder = () => {
                             </div>
 
                             <a 
-                                :href="`https://wa.me/6281280160417?text=Halo%2C%20saya%20${encodeURIComponent(page.props.flash.new_order.customer_name)}%20ingin%20diskusi%20custom%20order%20${encodeURIComponent(page.props.flash.new_order.order_code)}.`"
+                                :href="`https://wa.me/6281381395006?text=Halo%2C%20saya%20${encodeURIComponent(page.props.flash.new_order.customer_name)}%20ingin%20diskusi%20custom%20order%20${encodeURIComponent(page.props.flash.new_order.order_code)}.`"
                                 target="_blank"
                                 class="inline-flex items-center justify-center gap-2 w-full bg-green-500 text-white font-black py-4 rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/20"
                             >

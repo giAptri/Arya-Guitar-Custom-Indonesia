@@ -30,7 +30,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Export PDF — mendukung parameter ?year=&month=
+     * Export PDF 
      */
     public function exportPdf(Request $request)
     {
@@ -65,24 +65,32 @@ class DashboardController extends Controller
         // 1. Total Produk (Active Guitars) — tidak bergantung periode
         $totalProducts = Guitar::where('is_active', true)->count();
 
-        // 2. Pesanan Periode yang Dipilih
-        $ordersThisPeriod = Order::whereYear('created_at', $year)
+        // 2. Pesanan Selesai pada Periode yang Dipilih
+        $ordersThisPeriod = Order::where('status', 'selesai')
+            ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->count();
 
         // 3. Jumlah Pelanggan yang pernah pesan
         $totalCustomers = Customer::has('orders')->count();
 
-        // 4. Grafik Penjualan per bulan untuk tahun yang dipilih
-        $salesData = Order::whereYear('created_at', $year)
-            ->get()
-            ->groupBy(function ($order) {
-                return Carbon::parse($order->created_at)->format('n'); // 1-12
-            })
-            ->map(function ($row) {
-                return $row->sum('estimated_price');
-            })
-            ->toArray();
+        // 4. Grafik Penjualan per bulan — hanya pesanan selesai
+        $completedOrders = Order::where('status', 'selesai')
+            ->whereYear('created_at', $year)
+            ->get();
+
+        // Group by bulan (dari created_at)
+        $groupedByMonth = $completedOrders->groupBy(function ($order) {
+            return Carbon::parse($order->created_at)->format('n'); // 1-12
+        });
+
+        // Hitung count dan sum income per bulan
+        $salesData = $groupedByMonth->map(function ($row) {
+            return [
+                'count'  => $row->count(),
+                'income' => (int) $row->sum('estimated_price'),
+            ];
+        })->toArray();
 
         $months = [
             1  => 'Jan',
@@ -100,26 +108,37 @@ class DashboardController extends Controller
         ];
 
         $chartData = [];
-        $maxIncome = 0;
+        $maxCount  = 0;
 
         foreach ($months as $num => $label) {
-            $income = $salesData[$num] ?? 0;
-            if ($income > $maxIncome) {
-                $maxIncome = $income;
+            $monthData = $salesData[$num] ?? ['count' => 0, 'income' => 0];
+            $count     = $monthData['count'] ?? 0;
+            $income    = $monthData['income'] ?? 0;
+
+            if ($count > $maxCount) {
+                $maxCount = $count;
             }
 
             $chartData[] = [
                 'label'   => $label,
+                'count'   => $count,
                 'income'  => $income,
                 'expense' => 0,
             ];
         }
 
-        $maxScale = $maxIncome > 0 ? $maxIncome : 100;
+        // Gunakan count sebagai acuan tinggi bar agar pesanan tanpa harga tetap muncul
+        $maxScale = $maxCount > 0 ? $maxCount : 1;
 
         foreach ($chartData as &$data) {
-            $data['height']           = round(($data['income'] / $maxScale) * 100) . '%';
-            $data['formatted_income'] = 'Rp ' . number_format($data['income'], 0, ',', '.');
+            $data['height'] = round(($data['count'] / $maxScale) * 100) . '%';
+
+            // Tooltip: tampilkan jumlah pesanan, dan harga jika ada
+            if ($data['income'] > 0) {
+                $data['formatted_income'] = $data['count'] . ' pesanan · Rp ' . number_format($data['income'], 0, ',', '.');
+            } else {
+                $data['formatted_income'] = $data['count'] . ' pesanan selesai';
+            }
         }
 
         $periodLabel = Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y');

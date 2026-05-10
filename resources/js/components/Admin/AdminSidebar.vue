@@ -37,9 +37,7 @@ const menuItems = [
     { 
         title: 'Pelanggan Terbaru', 
         icon: Users, 
-        href: '#', // Per user request: "sidebar pelanggan terbaru tidak perlu" - wait, user said "sidebar pelanggan terbaru tidak perlu" in the text, but the screenshot has it. 
-        // Re-reading: "untuk sidebar pelanggan terbaru tidak perlu"
-        // Okay, I will remove it from the menu if the user said it's not needed.
+        href: '#', 
         active: false
     },
 ].filter(item => item.title !== 'Pelanggan Terbaru');

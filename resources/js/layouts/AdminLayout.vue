@@ -15,7 +15,7 @@ const user = computed(() => page.props.auth.user);
         <AdminSidebar />
 
         <!-- Main Content Area -->
-        <div class="flex-1 ml-72 flex flex-col">
+        <div class="flex-1 ml-72 min-w-0 flex flex-col overflow-x-hidden">
             <!-- Header -->
             <header class="h-20 px-12 flex items-center justify-between">
                 <Link :href="home().url" class="flex items-center gap-2 text-arya-gold font-bold text-sm tracking-wide">

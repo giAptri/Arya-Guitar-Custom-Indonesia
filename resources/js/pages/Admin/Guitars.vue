@@ -200,12 +200,12 @@ const formatCurrency = (value: number | null) => {
     <Head title="Kelola Gitar" />
 
     <AdminLayout>
-        <div class="mt-8">
+        <div class="mt-8 w-full overflow-x-hidden">
             <h1 class="text-3xl font-black text-black text-center">
                 Kelola <span class="text-arya-gold">gitar</span> mu sekarang!
             </h1>
 
-            <div class="mt-12 bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-50 overflow-hidden">
+            <div class="mt-12 bg-white rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-50 overflow-hidden w-full">
                 <!-- Toolbar -->
                 <div class="p-8 flex items-center justify-between border-b border-gray-50 gap-4">
                     <div class="flex items-center gap-2 text-sm font-bold text-gray-400">
@@ -237,7 +237,7 @@ const formatCurrency = (value: number | null) => {
                 </div>
 
                 <!-- Table -->
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto w-full">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-arya-gold text-white uppercase text-[10px] font-black tracking-widest">
